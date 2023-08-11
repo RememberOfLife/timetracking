@@ -27,7 +27,7 @@ sink_id get_sink_id_by_name(sink_info** sinks, const char* name)
 {
     //TODO improve efficiency
     for (size_t i = 0; i < VEC_LEN(&sinks); i++) {
-        if (strcmp(sinks[i]->name, name) == 0) {
+        if (strcmp((*sinks)[i].name, name) == 0) {
             return i;
         }
     }
