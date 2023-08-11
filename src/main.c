@@ -321,9 +321,43 @@ int main(int argc, char** argv)
             printf("\n");
         }
     } else if (strcmp(tool_mode, "now") == 0) {
-        //TODO display the last line in the timelog, to see which activity is currently running
-        printf("error: unimplemented\n");
-        exit(1);
+        // display the last line in the timelog, to see which activity is currently running
+        // this assumes that the last line (before the trailing new line) is always one containing activity content, and not just an empty date
+
+        //TODO does not work when there is only one line, or no lines at all, as it doesnt find the previous line '\' in that case
+
+        FILE* fh = fopen(path_timefile, "r");
+        if (fh == NULL) {
+            printf("error: could not open time log file\n");
+            exit(1);
+        }
+
+        // is this a valid use of fseek?
+        size_t line_len = 0;
+        fseek(fh, -2, SEEK_END);
+        while (true) {
+            char rc = fgetc(fh);
+            if (rc == '\n') {
+                break;
+            }
+            line_len++;
+            long fpos = ftell(fh);
+            fseek(fh, fpos - 2, SEEK_SET);
+        }
+
+        char* line_buf = malloc(line_len + 1);
+        fread(line_buf, 1, line_len, fh);
+        line_buf[line_len] = '\0';
+
+        const char* out_activities = line_buf;
+        // while (*(out_activities++) != ' ') {
+        //     // pass
+        // }
+        printf("%s\n", out_activities);
+
+        free(line_buf);
+
+        fclose(fh);
     } else {
         printf("error: unknown toolmode\n");
         exit(1);
