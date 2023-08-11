@@ -238,6 +238,12 @@ int main(int argc, char** argv)
 {
     if (argc == 1) {
         printf("usage: timetracking <sinkinfos.txt> <timefile.log> <mode> <content>\n");
+        printf("\n");
+        printf("modes:\n");
+        printf("\t%-8s %s\n", "info", "shows sinks and descriptions");
+        printf("\t%-8s %s\n", "push", "pushes the provided activities into the time log");
+        printf("\t%-8s %s\n", "stats", "provides statistics about time spent on sinks");
+        printf("\t%-8s %s\n", "now", "shows the currently ongoing activity");
         exit(0);
     }
 
