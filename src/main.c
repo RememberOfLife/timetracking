@@ -20,7 +20,7 @@ typedef struct sink_info_s {
 
 typedef struct sink_stats_s {
     uint32_t total_minutes;
-    uint32_t touched_days;
+    uint32_t touched_days; //TODO define some sort of min time for a day to count touched, e.g. 15min
 } sink_stats;
 
 sink_id get_sink_id_by_name(sink_info** sinks, const char* name)
@@ -229,6 +229,11 @@ void parse_sinks(const char* path, sink_info** sinks)
     fclose(fh);
 }
 
+void parse_timelog(const char* path, sink_info** sinks, sink_stats** stats, uint32_t* total_days)
+{
+    //TODO days should be separated by sleeping, not time, i.e. working into the night until 02.00 the next day, should still count towards stats for the previous days e.g. 14 waking hours -- use either a predefined shift of the cutoff point (e.g. stat days switch at 04.00 not at 00.00), or some dynamic detection
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 1) {
@@ -250,7 +255,7 @@ int main(int argc, char** argv)
     parse_sinks(path_sinkinfos, &sinks);
 
     if (strcmp(tool_mode, "info") == 0) {
-        printf("sinks: #%lu\n", VEC_LEN(&sinks));
+        printf("sink info: (%lu)\n", VEC_LEN(&sinks));
         for (sink_id i = 0; i < VEC_LEN(&sinks); i++) {
             printf("\t%-*s :", SINK_NAME_MAX_LEN, sinks[i].name);
             if (sinks[i].desc != NULL) {
@@ -295,8 +300,30 @@ int main(int argc, char** argv)
         fprintf(fh, "\n");
 
         fclose(fh);
-    } else if (strcmp(tool_mode, "review") == 0) {
-        //TODO give review about how much time is spent on what activity per day on average
+    } else if (strcmp(tool_mode, "stats") == 0) {
+        sink_stats* stats;
+        VEC_CREATE(&stats, VEC_LEN(&sinks));
+        for (size_t i = 0; i < VEC_LEN(&sinks); i++) {
+            stats[i] = (sink_stats){
+                .total_minutes = 0,
+                .touched_days = 0,
+            };
+        }
+        uint32_t total_days;
+        parse_timelog(path_timefile, &sinks, &stats, &total_days);
+        printf("sink stats: (%lu)\n", VEC_LEN(&sinks));
+        for (sink_id i = 0; i < VEC_LEN(&sinks); i++) {
+            printf("\t%-*s :", SINK_NAME_MAX_LEN, sinks[i].name);
+            printf(" %-4u", (uint32_t)((float)stats[i].total_minutes / (float)total_days)); // avg time per day
+            printf(" %-4u", (uint32_t)((float)stats[i].total_minutes / (float)stats[i].touched_days)); // avg time per day touched
+            printf(" %u", stats[i].total_minutes);
+            printf(" %u", stats[i].touched_days);
+            printf("\n");
+        }
+    } else if (strcmp(tool_mode, "now") == 0) {
+        //TODO display the last line in the timelog, to see which activity is currently running
+        printf("error: unimplemented\n");
+        exit(1);
     } else {
         printf("error: unknown toolmode\n");
         exit(1);
