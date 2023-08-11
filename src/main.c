@@ -356,9 +356,11 @@ int main(int argc, char** argv)
         line_buf[line_len] = '\0';
 
         const char* out_activities = line_buf;
-        // while (*(out_activities++) != ' ') {
-        //     // pass
-        // }
+        if (argc > 4 && strcmp(argv[4], "short") == 0) {
+            while (*(out_activities++) != ' ') {
+                // pass
+            }
+        }
         printf("%s\n", out_activities);
 
         free(line_buf);
